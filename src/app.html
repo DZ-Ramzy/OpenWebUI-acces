@@ -1,255 +1,692 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/png" href="/static/favicon.png" />
-		<link rel="icon" type="image/png" href="/static/favicon-96x96.png" sizes="96x96" />
-		<link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-		<link rel="shortcut icon" href="/static/favicon.ico" />
-		<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
-		<meta name="apple-mobile-web-app-title" content="Open WebUI" />
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="/static/favicon.png" />
+    <link rel="icon" type="image/png" href="/static/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Open WebUI" />
 
-		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
-		/>
-		<meta name="theme-color" content="#171717" />
-		<meta name="robots" content="noindex,nofollow" />
-		<meta name="description" content="Open WebUI" />
-		<link
-			rel="search"
-			type="application/opensearchdescription+xml"
-			title="Open WebUI"
-			href="/opensearch.xml"
-		/>
-		<script src="/static/loader.js" defer></script>
+    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#171717" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="description" content="Open WebUI" />
+    <link
+      rel="search"
+      type="application/opensearchdescription+xml"
+      title="Open WebUI"
+      href="/opensearch.xml"
+    />
+    <script src="/_app/immutable/loader.js" defer></script>
 
-		<script>
-			function resizeIframe(obj) {
-				obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
-			}
-		</script>
+    <script>
+      function resizeIframe(obj) {
+        obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+      }
+    </script>
+    <!-- Bouton d'accessibilité flottant -->
+    <button id="accessibility-btn" onclick="toggleAccessibilityPanel()" aria-label="Accessibility" title="Accessibility" >
+      ♿
+    </button>
 
-		<script>
-			// On page load or when changing themes, best to add inline in `head` to avoid FOUC
-			(() => {
-				const metaThemeColorTag = document.querySelector('meta[name="theme-color"]');
-				const prefersDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-				if (!localStorage?.theme) {
-					localStorage.theme = 'system';
-				}
+    <script>
+      // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+      document.addEventListener('DOMContentLoaded', () => {
+        const metaThemeColorTag = document.querySelector('meta[name="theme-color"]');
+        const prefersDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-				if (localStorage.theme === 'system') {
-					document.documentElement.classList.add(prefersDarkTheme ? 'dark' : 'light');
-					metaThemeColorTag.setAttribute('content', prefersDarkTheme ? '#171717' : '#ffffff');
-				} else if (localStorage.theme === 'oled-dark') {
-					document.documentElement.style.setProperty('--color-gray-800', '#101010');
-					document.documentElement.style.setProperty('--color-gray-850', '#050505');
-					document.documentElement.style.setProperty('--color-gray-900', '#000000');
-					document.documentElement.style.setProperty('--color-gray-950', '#000000');
-					document.documentElement.classList.add('dark');
-					metaThemeColorTag.setAttribute('content', '#000000');
-				} else if (localStorage.theme === 'light') {
-					document.documentElement.classList.add('light');
-					metaThemeColorTag.setAttribute('content', '#ffffff');
-				} else if (localStorage.theme === 'her') {
-					document.documentElement.classList.add('dark');
-					document.documentElement.classList.add('her');
-					metaThemeColorTag.setAttribute('content', '#983724');
-				} else {
-					document.documentElement.classList.add('dark');
-					metaThemeColorTag.setAttribute('content', '#171717');
-				}
+        if (!localStorage?.theme) {
+          localStorage.theme = 'system';
+        }
 
-				window.matchMedia('(prefers-color-scheme: dark)').addListener((e) => {
-					if (localStorage.theme === 'system') {
-						if (e.matches) {
-							document.documentElement.classList.add('dark');
-							document.documentElement.classList.remove('light');
-							metaThemeColorTag.setAttribute('content', '#171717');
-						} else {
-							document.documentElement.classList.add('light');
-							document.documentElement.classList.remove('dark');
-							metaThemeColorTag.setAttribute('content', '#ffffff');
-						}
-					}
-				});
+        function applyTheme() {
+          try {
+            const metaThemeColorTag = document.querySelector('meta[name="theme-color"]');
+            if (!metaThemeColorTag) return;
 
-				function setSplashImage() {
-					const logo = document.getElementById('logo');
-					const isDarkMode = document.documentElement.classList.contains('dark');
+            // Ne pas appliquer le thème sombre/lumineux si le mode contraste inversé est actif
+            if (document.body.classList.contains('contrast-invert')) {
+              metaThemeColorTag.setAttribute('content', '#ffff00');
+              return;
+            }
 
-					if (isDarkMode) {
-						const darkImage = new Image();
-						darkImage.src = '/static/splash-dark.png';
+            if (localStorage.theme === 'system') {
+              document.documentElement.classList.add(prefersDarkTheme ? 'dark' : 'light');
+              metaThemeColorTag.setAttribute('content', prefersDarkTheme ? '#171717' : '#ffffff');
+            } else if (localStorage.theme === 'oled-dark') {
+              document.documentElement.style.setProperty('--color-gray-800', '#101010');
+              document.documentElement.style.setProperty('--color-gray-850', '#050505');
+              document.documentElement.style.setProperty('--color-gray-900', '#000000');
+              document.documentElement.style.setProperty('--color-gray-950', '#000000');
+              document.documentElement.classList.add('dark');
+              metaThemeColorTag.setAttribute('content', '#000000');
+            } else if (localStorage.theme === 'light') {
+              document.documentElement.classList.add('light');
+              metaThemeColorTag.setAttribute('content', '#ffffff');
+            } else if (localStorage.theme === 'her') {
+              document.documentElement.classList.add('dark');
+              document.documentElement.classList.add('her');
+              metaThemeColorTag.setAttribute('content', '#983724');
+            } else {
+              document.documentElement.classList.add('dark');
+              metaThemeColorTag.setAttribute('content', '#171717');
+            }
+          } catch (error) {
+            console.error('Error applying theme:', error);
+          }
+        }
 
-						darkImage.onload = () => {
-							logo.src = '/static/splash-dark.png';
-							logo.style.filter = ''; // Ensure no inversion is applied if splash-dark.png exists
-						};
+        window.matchMedia('(prefers-color-scheme: dark)').addListener((e) => {
+          if (localStorage.theme === 'system' && !document.body.classList.contains('contrast-invert')) {
+            if (e.matches) {
+              document.documentElement.classList.add('dark');
+              document.documentElement.classList.remove('light');
+              metaThemeColorTag.setAttribute('content', '#171717');
+            } else {
+              document.documentElement.classList.add('light');
+              document.documentElement.classList.remove('dark');
+              metaThemeColorTag.setAttribute('content', '#ffffff');
+            }
+          }
+        });
 
-						darkImage.onerror = () => {
-							logo.style.filter = 'invert(1)'; // Invert image if splash-dark.png is missing
-						};
-					}
-				}
+        function setSplashImage() {
+          try {
+            const logo = document.getElementById('logo');
+            if (!logo) return;
+            
+            const isDarkMode = document.documentElement.classList.contains('dark') && !document.body.classList.contains('contrast-invert');
 
-				// Runs after classes are assigned
-				window.onload = setSplashImage;
-			})();
-		</script>
+            if (isDarkMode) {
+              const darkImage = new Image();
+              darkImage.src = '/static/splash-dark.png';
 
-		<title>Open WebUI</title>
+              darkImage.onload = () => {
+                logo.src = '/static/splash-dark.png';
+                logo.style.filter = '';
+              };
 
-		%sveltekit.head%
-	</head>
+              darkImage.onerror = () => {
+                logo.style.filter = 'invert(1)';
+              };
+            }
+          } catch (error) {
+            console.error('Error setting splash image:', error);
+          }
+        }
 
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
+        applyTheme();
+        window.onload = setSplashImage;
 
-		<div
-			id="splash-screen"
-			style="position: fixed; z-index: 100; top: 0; left: 0; width: 100%; height: 100%"
-		>
-			<style type="text/css" nonce="">
-				html {
-					overflow-y: scroll !important;
-				}
-			</style>
+        // Écouter les changements de contraste pour réappliquer le thème si nécessaire
+        document.addEventListener('contrastModeChanged', applyTheme);
+      });
+    </script>
 
-			<img
-				id="logo"
-				style="
-					position: absolute;
-					width: auto;
-					height: 6rem;
-					top: 44%;
-					left: 50%;
-					transform: translateX(-50%);
-				"
-				src="/static/splash.png"
-			/>
+    <title>Open WebUI</title>
 
-			<div
-				style="
-					position: absolute;
-					top: 33%;
-					left: 50%;
+    %sveltekit.head%
+  </head>
 
-					width: 24rem;
-					transform: translateX(-50%);
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
 
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-				"
-			>
-				<img
-					id="logo-her"
-					style="width: auto; height: 13rem"
-					src="/static/splash.png"
-					class="animate-pulse-fast"
-				/>
+    <div
+      id="splash-screen"
+      style="position: fixed; z-index: 100; top: 0; left: 0; width: 100%; height: 100%"
+    >
+      <style type="text/css" nonce="">
+        html {
+          overflow-y: scroll !important;
+        }
+      </style>
 
-				<div style="position: relative; width: 24rem; margin-top: 0.5rem">
-					<div
-						id="progress-background"
-						style="
-							position: absolute;
-							width: 100%;
-							height: 0.75rem;
+      <img
+        id="logo"
+        style="
+          position: absolute;
+          width: auto;
+          height: 6rem;
+          top: 44%;
+          left: 50%;
+          transform: translateX(-50%);
+        "
+        src="/static/splash.png"
+      />
 
-							border-radius: 9999px;
-							background-color: #fafafa9a;
-						"
-					></div>
+      <div
+        style="
+          position: absolute;
+          top: 33%;
+          left: 50%;
+          width: 24rem;
+          transform: translateX(-50%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        "
+      >
+        <img
+          id="logo-her"
+          style="width: auto; height: 13rem"
+          src="/static/splash.png"
+          class="animate-pulse-fast"
+        />
 
-					<div
-						id="progress-bar"
-						style="
-							position: absolute;
-							width: 0%;
-							height: 0.75rem;
-							border-radius: 9999px;
-							background-color: #fff;
-						"
-						class="bg-white"
-					></div>
-				</div>
-			</div>
+        <div style="position: relative; width: 24rem; margin-top: 0.5rem">
+          <div
+            id="progress-background"
+            style="
+              position: absolute;
+              width: 100%;
+              height: 0.75rem;
+              border-radius: 9999px;
+              background-color: #fafafa9a;
+            "
+          ></div>
 
-			<!-- <span style="position: absolute; bottom: 32px; left: 50%; margin: -36px 0 0 -36px">
-				Footer content
-			</span> -->
-		</div>
-	</body>
+          <div
+            id="progress-bar"
+            style="
+              position: absolute;
+              width: 0%;
+              height: 0.75rem;
+              border-radius: 9999px;
+              background-color: #fff;
+            "
+            class="bg-white"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panneau d'accessibilité -->
+    <div id="accessibility-panel" class="accessibility-panel" style="display: none;">
+      <div class="accessibility-panel-header">
+        <h2>Accessibility Settings</h2>
+        <button onclick="toggleAccessibilityPanel()" class="close-btn">
+          ✕
+        </button>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+        <!-- Colonne de gauche -->
+        <div style="width: 48%; margin-bottom: 15px;">
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">Contrast</h3>
+            <label style="display: block; margin: 5px 0;">
+              <input type="radio" name="contrasts" value="default" checked onchange="toggleContrast('default')"/>
+              <span>Default</span>
+            </label>
+            <label style="display: block; margin: 5px 0;">
+              <input type="radio" name="contrasts" value="enhance" onchange="toggleContrast('enhance')"/>
+              <span>Enhance</span>
+            </label>
+            <label style="display: block; margin: 5px 0;">
+              <input type="radio" name="contrasts" value="invert" onchange="toggleContrast('invert')" />
+              <span>Invert</span>
+            </label>
+          </div>
+        </div>
+
+        <script>
+          let isApplyingAccessibility = false;
+          
+          // Function to show accessibility notifications
+          function showAccessibilityNotification(message) {
+            // Create notification element if it doesn't exist
+            let notification = document.getElementById('accessibility-notification');
+            if (!notification) {
+              notification = document.createElement('div');
+              notification.id = 'accessibility-notification';
+              notification.className = 'accessibility-notification';
+              document.body.appendChild(notification);
+            }
+            
+            // Set message and show notification
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+              notification.classList.remove('show');
+            }, 3000);
+          }
+
+          // Function to toggle contrast
+          function toggleContrast(mode) {
+            if (isApplyingAccessibility) return;
+            isApplyingAccessibility = true;
+
+            document.body.classList.remove('contrast-default', 'contrast-enhance', 'contrast-invert');
+
+            if (mode === 'enhance') {
+              document.body.classList.add('contrast-enhance');
+              localStorage.setItem('contrast-mode', 'enhance');
+              showAccessibilityNotification('Enhanced contrast mode activated');
+            } else if (mode === 'invert') {
+              document.body.classList.add('contrast-invert');
+              localStorage.setItem('contrast-mode', 'invert');
+              showAccessibilityNotification('Inverted contrast mode activated');
+            } else {
+              document.body.classList.add('contrast-default');
+              localStorage.setItem('contrast-mode', 'default');
+              showAccessibilityNotification('Default contrast mode activated');
+            }
+
+            isApplyingAccessibility = false;
+          }
+
+          // Appliquer le contraste au chargement de la page
+          document.addEventListener('DOMContentLoaded', () => {
+            const savedContrast = localStorage.getItem('contrast-mode') || 'default';
+            toggleContrast(savedContrast);
+            document.querySelector(`input[name="contrasts"][value="${savedContrast}"]`).checked = true;
+          });
+
+          // Fonctions pour réappliquer les autres modes (à définir si elles ne le sont pas déjà)
+          function applyDyslexicMode() {
+            const savedDyslexicMode = localStorage.getItem('dyslexic-mode') === 'true';
+            toggleDyslexicMode(savedDyslexicMode);
+          }
+
+          function applyLineSpacing() {
+            const savedSpacing = localStorage.getItem('line-spacing') || 'default';
+            toggleLineSpacing(savedSpacing);
+          }
+        </script>
+
+        <!-- Colonne de droite -->
+        <div style="width: 48%; margin-bottom: 15px;">
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Line Spacing</h3>
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="spacing" value="default" checked onchange="toggleLineSpacing('default')" />
+              <span>Default</span>
+            </label>
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="spacing" value="increased" onchange="toggleLineSpacing('increased')" />
+              <span>Increase</span>
+            </label>
+          </div>
+        </div>
+
+        <script>
+          // Function to toggle line spacing
+          function toggleLineSpacing(mode) {
+            if (isApplyingAccessibility) return;
+            isApplyingAccessibility = true;
+
+            document.body.classList.remove('line-spacing-default', 'line-spacing-increased');
+            
+            if (mode === 'increased') {
+              document.body.classList.add('line-spacing-increased');
+              localStorage.setItem('line-spacing', 'increased');
+              showAccessibilityNotification('Increased line spacing activated');
+            } else {
+              document.body.classList.add('line-spacing-default');
+              localStorage.setItem('line-spacing', 'default');
+              showAccessibilityNotification('Default line spacing activated');
+            }
+
+            isApplyingAccessibility = false;
+          }
+
+          // Appliquer les modes au chargement de la page
+          document.addEventListener('DOMContentLoaded', () => {
+            const savedContrast = localStorage.getItem('contrast-mode') || 'default';
+            const savedSpacing = localStorage.getItem('line-spacing') || 'default';
+            const savedDyslexicMode = localStorage.getItem('dyslexic-mode') === 'true';
+            const savedEasyReadMode = localStorage.getItem('easyread-mode') === 'true';
+            const savedFontSize = localStorage.getItem('font-size') || 'default';
+            const savedEasyReadLanguage = localStorage.getItem('easyread-language') || 'fr';
+
+            toggleContrast(savedContrast);
+            toggleLineSpacing(savedSpacing);
+            toggleDyslexicMode(savedDyslexicMode);
+            toggleEasyReadMode(savedEasyReadMode);
+            toggleFontSize(savedFontSize);
+            changeEasyReadLanguage(savedEasyReadLanguage);
+
+            // Set the correct radio button states
+            document.querySelector(`input[name="contrasts"][value="${savedContrast}"]`).checked = true;
+            document.querySelector(`input[name="spacing"][value="${savedSpacing}"]`).checked = true;
+            document.querySelector(`input[name="font"][value="${savedDyslexicMode ? 'dyslexic' : 'default'}"]`).checked = true;
+            document.querySelector(`input[name="justification"][value="${savedEasyReadMode ? 'on' : 'off'}"]`).checked = true;
+            document.querySelector(`input[name="fontSize"][value="${savedFontSize}"]`).checked = true;
+          });
+        </script>
+
+        <!-- Ligne combinée Font + Easy Read -->
+        <div style="width: 100%; display: flex; justify-content: space-between; margin-top: 10px;">
+          <div style="width: 48%;">
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Font (Dyslexia)</h3>
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="font" value="default" checked onchange="toggleDyslexicMode(false)"/>
+              <span>Default</span>
+            </label>
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="font" value="dyslexic" onchange="toggleDyslexicMode(true)"/>
+              <span>Adapt</span>
+            </label>
+          </div>
+
+          <div style="width: 48%;">
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Easy Read Mode</h3>
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="justification" value="off" checked onchange="toggleEasyReadMode(false)" />
+              <span>OFF</span>
+            </label>
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="justification" value="on" onchange="toggleEasyReadMode(true)" />
+              <span>ON</span>
+            </label>
+            <!-- Language selector for Easy Read mode -->
+            <div id="easyread-language-selector" style="display: none; margin-top: 10px;">
+              <h4 style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: white;">Easy Read Language</h4>
+              <select id="easyread-language" onchange="changeEasyReadLanguage(this.value)" style="width: 100%; padding: 5px; border-radius: 4px; background-color: black; color: white; border: 1px solid #333;">
+                <option value="fr" style="background-color: black; color: white;">Français</option>
+                <option value="en" style="background-color: black; color: white;">English</option>
+                <option value="es" style="background-color: black; color: white;">Español</option>
+                <option value="de" style="background-color: black; color: white;">Deutsch</option>
+                <option value="it" style="background-color: black; color: white;">Italiano</option>
+                <option value="ar" style="background-color: black; color: white;">العربية</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Font Size Section -->
+        <div style="width: 100%; margin-top: 15px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Text Size</h3>
+          <div style="display: flex; gap: 15px;">
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="fontSize" value="default" checked onchange="toggleFontSize('default')" />
+              <span>Default</span>
+            </label>
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="fontSize" value="medium" onchange="toggleFontSize('medium')" />
+              <span>Medium</span>
+            </label>
+            <label style="display: block; margin: 8px 0;">
+              <input type="radio" name="fontSize" value="large" onchange="toggleFontSize('large')" />
+              <span>Large</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Add keyboard shortcut for accessibility panel
+      document.addEventListener('keydown', function(event) {
+        // Check if Alt + A is pressed
+        if (event.altKey && event.key.toLowerCase() === 'a') {
+          event.preventDefault(); // Prevent default browser behavior
+          toggleAccessibilityPanel();
+        }
+      });
+
+      function toggleAccessibilityPanel() {
+        const panel = document.getElementById('accessibility-panel');
+        if (panel.style.display === 'none' || panel.style.display === '') {
+          panel.style.display = 'block';
+          // Add focus to the first interactive element in the panel
+          const firstInput = panel.querySelector('input');
+          if (firstInput) {
+            firstInput.focus();
+          }
+        } else {
+          panel.style.display = 'none';
+        }
+      }
+
+      // Function to toggle dyslexic mode
+      function toggleDyslexicMode(enable) {
+        if (isApplyingAccessibility) return;
+        isApplyingAccessibility = true;
+
+        if (enable) {
+          document.documentElement.classList.add('dyslexic-font');
+          localStorage.setItem('dyslexic-mode', 'true');
+          showAccessibilityNotification('OpenDyslexic font activated');
+        } else {
+          document.documentElement.classList.remove('dyslexic-font');
+          localStorage.setItem('dyslexic-mode', 'false');
+          showAccessibilityNotification('OpenDyslexic font deactivated');
+        }
+
+        isApplyingAccessibility = false;
+      }
+
+      // Function to toggle Easy Read mode (formerly FALC)
+      function toggleEasyReadMode(enable) {
+        if (isApplyingAccessibility) return;
+        isApplyingAccessibility = true;
+
+        const languageSelector = document.getElementById('easyread-language-selector');
+        
+        if (enable) {
+          document.body.classList.add('easyread-mode');
+          localStorage.setItem('easyread-mode', 'true');
+          languageSelector.style.display = 'block';
+          showAccessibilityNotification('Easy Read mode activated');
+          // Apply saved language if exists
+          const savedLanguage = localStorage.getItem('easyread-language') || 'fr';
+          document.getElementById('easyread-language').value = savedLanguage;
+          changeEasyReadLanguage(savedLanguage);
+        } else {
+          document.body.classList.remove('easyread-mode');
+          localStorage.setItem('easyread-mode', 'false');
+          languageSelector.style.display = 'none';
+          showAccessibilityNotification('Easy Read mode deactivated');
+        }
+
+        isApplyingAccessibility = false;
+      }
+
+      // Function to change Easy Read language
+      function changeEasyReadLanguage(language) {
+        if (isApplyingAccessibility) return;
+        isApplyingAccessibility = true;
+
+        document.body.classList.remove('easyread-fr', 'easyread-en', 'easyread-es', 'easyread-de', 'easyread-it', 'easyread-ar');
+        document.body.classList.add(`easyread-${language}`);
+        localStorage.setItem('easyread-language', language);
+        showAccessibilityNotification(`Easy Read language changed to ${language.toUpperCase()}`);
+
+        isApplyingAccessibility = false;
+      }
+
+      // Function to toggle font size
+      function toggleFontSize(size) {
+        if (isApplyingAccessibility) return;
+        isApplyingAccessibility = true;
+
+        document.documentElement.classList.remove('font-size-default', 'font-size-medium', 'font-size-large');
+        
+        switch(size) {
+          case 'medium':
+            document.documentElement.classList.add('font-size-medium');
+            localStorage.setItem('font-size', 'medium');
+            showAccessibilityNotification('Medium text size activated');
+            break;
+          case 'large':
+            document.documentElement.classList.add('font-size-large');
+            localStorage.setItem('font-size', 'large');
+            showAccessibilityNotification('Large text size activated');
+            break;
+          default:
+            document.documentElement.classList.add('font-size-default');
+            localStorage.setItem('font-size', 'default');
+            showAccessibilityNotification('Default text size activated');
+        }
+
+        isApplyingAccessibility = false;
+      }
+    </script>
+
+    <script>
+      window.showAccessibilityPanel = function() {
+        var panel = document.getElementById('accessibility-panel');
+        if (panel) {
+          panel.style.display = 'block';
+          var firstInput = panel.querySelector('input');
+          if (firstInput) firstInput.focus();
+        }
+      }
+    </script>
+  </body>
 </html>
 
 <style type="text/css" nonce="">
-	html {
-		overflow-y: hidden !important;
-	}
+  html {
+    overflow-y: hidden !important;
+  }
 
-	#splash-screen {
-		background: #fff;
-	}
+  #splash-screen {
+    background: #fff;
+  }
 
-	html.dark #splash-screen {
-		background: #000;
-	}
+  html.dark #splash-screen {
+    background: #000;
+  }
 
-	html.her #splash-screen {
-		background: #983724;
-	}
+  html.her #splash-screen {
+    background: #983724;
+  }
 
-	#logo-her {
-		display: none;
-	}
+  #logo-her {
+    display: none;
+  }
 
-	#progress-background {
-		display: none;
-	}
+  #progress-background {
+    display: none;
+  }
 
-	#progress-bar {
-		display: none;
-	}
+  #progress-bar {
+    display: none;
+  }
 
-	html.her #logo {
-		display: none;
-	}
+  html.her #logo {
+    display: none;
+  }
 
-	html.her #logo-her {
-		display: block;
-		filter: invert(1);
-	}
+  html.her #logo-her {
+    display: block;
+    filter: invert(1);
+  }
 
-	html.her #progress-background {
-		display: block;
-	}
+  html.her #progress-background {
+    display: block;
+  }
 
-	html.her #progress-bar {
-		display: block;
-	}
+  html.her #progress-bar {
+    display: block;
+  }
 
-	@media (max-width: 24rem) {
-		html.her #progress-background {
-			display: none;
-		}
+  @media (max-width: 24rem) {
+    html.her #progress-background {
+      display: none;
+    }
 
-		html.her #progress-bar {
-			display: none;
-		}
-	}
+    html.her #progress-bar {
+      display: none;
+    }
+  }
 
-	@keyframes pulse {
-		50% {
-			opacity: 0.65;
-		}
-	}
+  @keyframes pulse {
+    50% {
+      opacity: 0.65;
+    }
+  }
 
-	.animate-pulse-fast {
-		animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-	}
+  .animate-pulse-fast {
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Font size classes */
+  .font-size-default {
+    --base-font-size: 16px;
+  }
+
+  .font-size-medium {
+    --base-font-size: 18px;
+  }
+
+  .font-size-large {
+    --base-font-size: 20px;
+  }
+
+  /* Apply base font size to all text elements */
+  body {
+    font-size: var(--base-font-size, 16px);
+  }
+
+  /* Adjust specific elements that might need different scaling */
+  h1, h2, h3, h4, h5, h6 {
+    font-size: calc(var(--base-font-size, 16px) * 1.2);
+  }
+
+  small {
+    font-size: calc(var(--base-font-size, 16px) * 0.875);
+  }
+
+  /* Easy Read language specific styles */
+  .easyread-fr, .easyread-en, .easyread-es, .easyread-de, .easyread-it, .easyread-ar {
+    --easyread-font-family: 'Arial', sans-serif;
+    --easyread-line-height: 1.5;
+    --easyread-text-color: white;
+    --easyread-bg-color: black;
+  }
+  .easyread-ar {
+    font-family: 'Arial', 'Noto Naskh Arabic', 'Tahoma', sans-serif;
+    direction: rtl;
+  }
+  /* Apply Easy Read styles when mode is active */
+  .easyread-mode {
+    font-family: var(--easyread-font-family);
+    line-height: var(--line-spacing, 1.5);
+    text-align: left;
+    color: var(--easyread-text-color);
+    background-color: var(--easyread-bg-color);
+  }
+
+  /* Style for select dropdown in dark mode */
+  select#easyread-language {
+    background-color: black !important;
+    color: white !important;
+  }
+
+  select#easyread-language option {
+    background-color: black !important;
+    color: white !important;
+  }
+
+  /* Line spacing classes */
+  .line-spacing-default {
+    --line-spacing: 1.5;
+  }
+
+  .line-spacing-increased {
+    --line-spacing: 2;
+  }
+
+  /* Apply line spacing to all text elements */
+  body {
+    line-height: var(--line-spacing, 1.5);
+  }
+
+  /* Ensure line spacing works with Easy Read mode */
+  .easyread-mode {
+    line-height: var(--line-spacing, 1.5);
+  }
+
 </style>

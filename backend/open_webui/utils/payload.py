@@ -15,6 +15,22 @@ def apply_model_system_prompt_to_body(
     if not system:
         return form_data
 
+    # Check for FALC mode in metadata
+    falc_mode = metadata.get("falc_mode", False) if metadata else False
+    falc_language = metadata.get("falc_language", "fr") if metadata else "fr"
+    
+    # Add FALC instruction if enabled
+    if falc_mode:
+        falc_instructions = {
+            "fr": "You must answer in Easy-to-Read French (Français Facile à Lire et à Comprendre). Use simple words, short sentences, and avoid technical jargon.",
+            "en": "You must answer in Easy-to-Read English. Use simple words, short sentences, and avoid technical jargon.",
+            "es": "Debes responder en Español Fácil de Leer y Comprender. Usa palabras simples, oraciones cortas y evita la jerga técnica.",
+            "de": "Sie müssen in Einfacher Sprache antworten. Verwenden Sie einfache Wörter, kurze Sätze und vermeiden Sie Fachjargon.",
+            "it": "Devi rispondere in Italiano Semplice da Leggere e Comprendere. Usa parole semplici, frasi brevi ed evita il gergo tecnico."
+        }
+        falc_instruction = falc_instructions.get(falc_language, falc_instructions["fr"])
+        system = f"{falc_instruction}\n\n{system}"
+
     # Metadata (WebUI Usage)
     if metadata:
         variables = metadata.get("variables", {})
