@@ -1590,8 +1590,8 @@
 					...params,
 					metadata: {
 						...params?.metadata,
-						falc_mode: document.body.classList.contains('falc-mode'),
-						falc_language: document.body.getAttribute('data-falc-language') || 'fr'
+						"easyread-mode": document.body.classList.contains('easyread-mode'),
+						"easyread-language": document.body.getAttribute('data-easyread-language') || 'fr'
 					}
 				},
 				files: (files?.length ?? 0) > 0 ? files : undefined,

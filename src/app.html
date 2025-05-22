@@ -31,11 +31,6 @@
       }
     </script>
     <!-- Bouton d'accessibilité flottant -->
-    <button id="accessibility-btn" onclick="toggleAccessibilityPanel()" aria-label="Accessibility" title="Accessibility" >
-      ♿
-    </button>
-
-
     <script>
       // On page load or when changing themes, best to add inline in `head` to avoid FOUC
       document.addEventListener('DOMContentLoaded', () => {
@@ -136,6 +131,9 @@
   </head>
 
   <body data-sveltekit-preload-data="hover">
+    <!--button id="accessibility-btn" onclick="toggleAccessibilityPanel()" aria-label="Accessibility" title="Accessibility">
+      <img src='/static/oui.svg' alt="Accessibility Icon" style="width: 30px; height: 30px; display: block; filter: invert(0.2);" />
+    </button-->
     <div style="display: contents">%sveltekit.body%</div>
 
     <div
@@ -434,19 +432,18 @@
         }
       });
 
-      function toggleAccessibilityPanel() {
-        const panel = document.getElementById('accessibility-panel');
-        if (panel.style.display === 'none' || panel.style.display === '') {
-          panel.style.display = 'block';
-          // Add focus to the first interactive element in the panel
-          const firstInput = panel.querySelector('input');
-          if (firstInput) {
-            firstInput.focus();
-          }
-        } else {
-          panel.style.display = 'none';
-        }
-      }
+      window.toggleAccessibilityPanel = function () {
+		    const panel = document.getElementById('accessibility-panel');
+		      if (panel.style.display === 'none' || panel.style.display === '') {
+			      panel.style.display = 'block';
+			      const firstInput = panel.querySelector('input');
+			    if (firstInput) {
+				    firstInput.focus();
+			    }
+		      } else {
+			      panel.style.display = 'none';
+		      }
+	    };
 
       // Function to toggle dyslexic mode
       function toggleDyslexicMode(enable) {

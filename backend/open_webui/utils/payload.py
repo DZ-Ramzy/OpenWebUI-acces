@@ -15,21 +15,76 @@ def apply_model_system_prompt_to_body(
     if not system:
         return form_data
 
-    # Check for FALC mode in metadata
-    falc_mode = metadata.get("falc_mode", False) if metadata else False
-    falc_language = metadata.get("falc_language", "fr") if metadata else "fr"
+    # Check for Easy Read mode in metadata
+    easyread_mode = metadata.get("easyread-mode", False) if metadata else False
+    easyread_language = metadata.get("easyread-language", "fr") if metadata else "fr"
     
-    # Add FALC instruction if enabled
-    if falc_mode:
-        falc_instructions = {
-            "fr": "You must answer in Easy-to-Read French (Français Facile à Lire et à Comprendre). Use simple words, short sentences, and avoid technical jargon.",
-            "en": "You must answer in Easy-to-Read English. Use simple words, short sentences, and avoid technical jargon.",
-            "es": "Debes responder en Español Fácil de Leer y Comprender. Usa palabras simples, oraciones cortas y evita la jerga técnica.",
-            "de": "Sie müssen in Einfacher Sprache antworten. Verwenden Sie einfache Wörter, kurze Sätze und vermeiden Sie Fachjargon.",
-            "it": "Devi rispondere in Italiano Semplice da Leggere e Comprendere. Usa parole semplici, frasi brevi ed evita il gergo tecnico."
+    # Add Easy Read instruction if enabled
+    if easyread_mode:
+        easyread_instructions = {
+            "fr": """Tu dois répondre en français facile à lire et à comprendre (FALC). Suis ces règles strictement :
+                1.Utilise uniquement des mots simples et du quotidien
+                2.Écris des phrases très courtes (maximum 10 à 15 mots)
+                3.Évite tous les termes techniques et le jargon
+                4.Utilise la voix active (et non la forme passive)
+                5.Découpe les idées complexes en étapes simples
+                6.Utilise des listes à puces ou des listes numérotées si possible
+                7.Ajoute des transitions claires entre les idées
+                8.Répète les informations importantes
+                9.Utilise des exemples pour expliquer les concepts difficiles""",
+            "en": """You must answer in Easy-to-Read English. Follow these rules strictly:
+                1. Use only simple, everyday words
+                2. Write very short sentences (maximum 10-15 words)
+                3. Avoid all technical terms and jargon
+                4. Use active voice instead of passive
+                5. Break down complex ideas into simple steps
+                6. Use bullet points or numbered lists when possible
+                7. Add clear transitions between ideas
+                8. Repeat important information
+                9. Use examples to explain difficult concepts""",
+            "es": """Debes responder en Español Fácil de Leer y Comprender. Sigue estas reglas estrictamente:
+                1. Usa solo palabras simples y cotidianas
+                2. Escribe oraciones muy cortas (máximo 10-15 palabras)
+                3. Evita todos los términos técnicos y jerga
+                4. Usa voz activa en lugar de pasiva
+                5. Divide ideas complejas en pasos simples
+                6. Usa viñetas o listas numeradas cuando sea posible
+                7. Agrega transiciones claras entre ideas
+                8. Repite información importante
+                9. Usa ejemplos para explicar conceptos difíciles""",
+            "de": """Sie müssen in Einfacher Sprache antworten. Folgen Sie diesen Regeln strikt:
+                1. Verwenden Sie nur einfache, alltägliche Wörter
+                2. Schreiben Sie sehr kurze Sätze (maximal 10-15 Wörter)
+                3. Vermeiden Sie alle Fachbegriffe und Jargon
+                4. Verwenden Sie aktive statt passive Stimme
+                5. Teilen Sie komplexe Ideen in einfache Schritte auf
+                6. Verwenden Sie Aufzählungszeichen oder nummerierte Listen wenn möglich
+                7. Fügen Sie klare Übergänge zwischen Ideen hinzu
+                8. Wiederholen Sie wichtige Informationen
+                9. Verwenden Sie Beispiele um schwierige Konzepte zu erklären""",
+            "it": """Devi rispondere in Italiano Semplice da Leggere e Comprendere. Segui queste regole rigorosamente:
+                1. Usa solo parole semplici e quotidiane
+                2. Scrivi frasi molto brevi (massimo 10-15 parole)
+                3. Evita tutti i termini tecnici e il gergo
+                4. Usa la voce attiva invece di quella passiva
+                5. Suddividi idee complesse in passi semplici
+                6. Usa elenchi puntati o numerati quando possibile
+                7. Aggiungi transizioni chiare tra le idee
+                8. Ripeti le informazioni importanti
+                9. Usa esempi per spiegare concetti difficili""",
+            "ar": """يجب أن تجيب باللغة العربية المبسطة. اتبع هذه القواعد بدقة:
+                1. استخدم كلمات بسيطة ومألوفة فقط
+                2. اكتب جمل قصيرة جداً (10-15 كلمة كحد أقصى)
+                3. تجنب جميع المصطلحات التقنية والمصطلحات المتخصصة
+                4. استخدم الصيغة الفعلية بدلاً من الصيغة المجهولة
+                5. قسم الأفكار المعقدة إلى خطوات بسيطة
+                6. استخدم النقاط أو القوائم المرقمة عندما يكون ذلك ممكناً
+                7. أضف انتقالات واضحة بين الأفكار
+                8. كرر المعلومات المهمة
+                9. استخدم أمثلة لشرح المفاهيم الصعبة"""
         }
-        falc_instruction = falc_instructions.get(falc_language, falc_instructions["fr"])
-        system = f"{falc_instruction}\n\n{system}"
+        easyread_instruction = easyread_instructions.get(easyread_language, easyread_instructions["fr"])
+        system = f"{easyread_instruction}\n\n{system}"
 
     # Metadata (WebUI Usage)
     if metadata:

@@ -27,6 +27,7 @@
 	import { stringify } from 'postcss';
 	import PencilSquare from '../icons/PencilSquare.svelte';
 	import Plus from '../icons/Plus.svelte';
+	import { t } from 'i18next';
 
 	const i18n = getContext('i18n');
 

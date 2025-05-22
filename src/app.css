@@ -172,8 +172,8 @@
   right: 100px;
   width: 60px;
   height: 60px;
-  background-color: transparent !important;
-  color: currentColor !important;
+  background-color: transparent;
+  color: blue;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -195,7 +195,8 @@
   outline-offset: 2px;
 }
 
-#accessibility-btn svg {
+#accessibility-btn svg,
+#accessibility-btn img {
   width: 30px;
   height: 30px;
   fill: currentColor !important;

@@ -254,7 +254,20 @@ type MessageForm = {
 	meta?: object;
 };
 
+interface Params {
+	metadata?: {
+		easyread_mode?: boolean;
+		easyread_language?: string;
+		[key: string]: any;
+	};
+	[key: string]: any;
+}
+
 export const sendMessage = async (token: string = '', channel_id: string, message: MessageForm) => {
+	const params: Params = {};
+	if (message.meta) {
+		params.metadata = message.meta;
+	}
 	let error = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/channels/${channel_id}/messages/post`, {
