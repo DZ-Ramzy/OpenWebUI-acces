@@ -237,6 +237,17 @@ If you have any questions, suggestions, or need assistance, please open an issue
     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=open-webui/open-webui&type=Date" />
     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=open-webui/open-webui&type=Date" />
   </picture>
+
+
+## TO USE THE PATCH : 
+```bash
+git clone https://github.com/open-webui/open-webui.git
+git clone https://github.com/DZ-Ramzy/OpenWebUI-acces.git
+cd OpenWebUI-acces
+.\apply_patch.ps1
+cd ../open-webui
+docker compose up --build
+```
 </a>
 
 ---
